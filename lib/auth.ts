@@ -6,11 +6,12 @@ import { compare } from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "./sign-in",
+    signIn: "/sign-in",
   },
   providers: [
     CredentialsProvider({
@@ -29,6 +30,8 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("bla autorize");
+
         if (!credentials?.email || !credentials.password) {
           return null;
         }
@@ -38,10 +41,12 @@ export const authOptions: NextAuthOptions = {
         if (!existingUser) {
           return null;
         }
-        const passwordMatch = compare(
+        const passwordMatch = await compare(
           credentials.password,
           existingUser.password
         );
+
+        console.log("bla log passwordMatch", passwordMatch);
 
         if (!passwordMatch) {
           return null;
@@ -56,4 +61,24 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user, account, profile, isNewUser }) {
+      if (user) {
+        return {
+          ...token,
+          username: user?.username,
+        };
+      }
+      return token;
+    },
+    async session({ session, user, token }) {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          username: token.username,
+        },
+      };
+    },
+  },
 };

@@ -14,6 +14,9 @@ import * as z from "zod";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 
 const FormSchema = z.object({
   email: z.string().min(1, "Email is required").email("invalid email"),
@@ -24,6 +27,8 @@ const FormSchema = z.object({
 });
 
 const SignInForm = () => {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -32,8 +37,27 @@ const SignInForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof FormSchema>) => {
-    console.log("bla submitted", values);
+  const { toast } = useToast();
+
+  const onSubmit = async (values: z.infer<typeof FormSchema>) => {
+    console.log("bla si");
+
+    const signInData = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
+    });
+    console.log("bla signindata", signInData);
+    if (signInData?.error) {
+      toast({
+        title: "Error",
+        description: "oops: " + signInData.error,
+        variant: "destructive",
+      });
+    } else {
+      router.refresh();
+      router.push("./admin");
+    }
   };
 
   return (
