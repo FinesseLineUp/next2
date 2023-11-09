@@ -17,6 +17,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import GoggleSignInButton from "../GoggleSignInButton";
 
 const FormSchema = z.object({
   email: z.string().min(1, "Email is required").email("invalid email"),
@@ -58,6 +59,10 @@ const SignInForm = () => {
       router.refresh();
       router.push("./admin");
     }
+  };
+
+  const googleSignInHandler = () => {
+    return null;
   };
 
   return (
@@ -102,6 +107,7 @@ const SignInForm = () => {
       >
         or
       </div>
+      <GoggleSignInButton>Sign in with Google</GoggleSignInButton>
       <p className="text-center text-sm text-gray-600 mt-2">
         if you don&apos;t have an account, please&nbsp;
         <Link href="/sign-up" className="text-blue-500 hover:underline">
